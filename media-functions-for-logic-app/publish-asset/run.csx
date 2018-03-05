@@ -17,6 +17,8 @@ Output:
 
 #r "Newtonsoft.Json"
 #r "Microsoft.WindowsAzure.Storage"
+//#r "Microsoft.Azure.Documents.Client"
+//#r "Microsoft.Azure.DocumentDB"
 #load "../Shared/mediaServicesHelpers.csx"
 #load "../Shared/copyBlobHelpers.csx"
 
@@ -38,6 +40,8 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.Azure.WebJobs;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Documents;
 
 // Read values from the App.config file.
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
@@ -48,6 +52,8 @@ static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AM
 
 static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
 static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
+static readonly string _cosmosUrl = Environment.GetEnvironmentVariable("CosmosDBUrl");
+static readonly string _cosmosKey = Environment.GetEnvironmentVariable("CosmosDBKey");
 
 // Field for service context.
 private static CloudMediaContext _context = null;
@@ -76,6 +82,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string smoothUrl = "";
     string pathUrl = "";
     string preferredSE = data.preferredSE;
+    string documentId = "";
 
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
@@ -124,6 +131,26 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         }
     }
 
+    catch (Exception ex)
+    {
+        log.Info($"Exception {ex}");
+        return req.CreateResponse(HttpStatusCode.InternalServerError, new
+        {
+            Error = ex.ToString()
+        });
+    }
+
+    try
+    {
+        DocumentClient client = new DocumentClient(new Uri(_cosmosUrl), _cosmosKey);        
+        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Videos", "Assets"), new
+        {
+            playerUrl = playerUrl,
+            smoothUrl = smoothUrl,
+            pathUrl = pathUrl
+        });
+        documentId = result.Resource.Id;
+    }
     catch (Exception ex)
     {
         log.Info($"Exception {ex}");

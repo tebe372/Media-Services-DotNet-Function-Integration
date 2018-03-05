@@ -5,7 +5,8 @@
         "windowsazure.mediaservices": "4.1.0.1",
         "windowsazure.mediaservices.extensions": "4.1.0.1",
         "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.1",
-        "Microsoft.IdentityModel.Protocol.Extensions": "1.0.2.206221351"
+        "Microsoft.IdentityModel.Protocol.Extensions": "1.0.2.206221351",
+        "Microsoft.Azure.DocumentDB": "1.20.2"
       }
     }
    }
