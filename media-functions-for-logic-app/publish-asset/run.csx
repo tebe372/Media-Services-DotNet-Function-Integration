@@ -83,8 +83,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string pathUrl = "";
     string preferredSE = data.preferredSE;
     string documentId = "";
+    string publishedDocumentId = "";
 
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
+
+    DocumentClient client = new DocumentClient(new Uri(_cosmosUrl), _cosmosKey);  
 
     try
     {
@@ -109,6 +112,14 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 error = "Asset not found"
             });
         }
+
+        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Videos", "Assets"), new
+        {
+            playerUrl = playerUrl,
+            smoothUrl = smoothUrl,
+            pathUrl = pathUrl
+        });
+        documentId = result.Resource.Id;
 
         // publish with a streaming locator (100 years)
         IAccessPolicy readPolicy2 = _context.AccessPolicies.Create("readPolicy", TimeSpan.FromDays(365*100), AccessPermissions.Read);
@@ -141,15 +152,14 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     }
 
     try
-    {
-        DocumentClient client = new DocumentClient(new Uri(_cosmosUrl), _cosmosKey);        
-        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Videos", "Assets"), new
+    {      
+        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Videos", "PublishedAssets"), new
         {
             playerUrl = playerUrl,
             smoothUrl = smoothUrl,
             pathUrl = pathUrl
         });
-        documentId = result.Resource.Id;
+        publishedDocumentId = result.Resource.Id;
     }
     catch (Exception ex)
     {
@@ -165,6 +175,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     {
         playerUrl = playerUrl,
         smoothUrl = smoothUrl,
-        pathUrl = pathUrl
+        pathUrl = pathUrl,
+        documentId = documentId,
+        publishedDocumentId = publishedDocumentId
     });
 }
