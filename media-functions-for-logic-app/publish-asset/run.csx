@@ -17,8 +17,8 @@ Output:
 
 #r "Newtonsoft.Json"
 #r "Microsoft.WindowsAzure.Storage"
-//#r "Microsoft.Azure.Documents.Client"
-//#r "Microsoft.Azure.DocumentDB"
+#r "Microsoft.Azure.Documents.Client"
+#r "Microsoft.Azure.DocumentDB"
 #load "../Shared/mediaServicesHelpers.csx"
 #load "../Shared/copyBlobHelpers.csx"
 
