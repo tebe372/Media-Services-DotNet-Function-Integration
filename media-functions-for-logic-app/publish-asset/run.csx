@@ -84,7 +84,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string preferredSE = data.preferredSE;
     string documentId = "";
     string publishedDocumentId = "";
-    sstring videoName = "";
+    string videoName = "";
 
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
