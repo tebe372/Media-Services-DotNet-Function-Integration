@@ -18,6 +18,7 @@ Output:
 #r "Newtonsoft.Json"
 #r "Microsoft.WindowsAzure.Storage"
 #r "Microsoft.Azure.Documents.Client"
+//#r "Microsoft.Azure.DocumentDB"
 #load "../Shared/mediaServicesHelpers.csx"
 #load "../Shared/copyBlobHelpers.csx"
 
@@ -88,7 +89,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
     DocumentClient client = new DocumentClient(new Uri(_cosmosUrl), _cosmosKey);  
-s
+
     try
     {
         AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
