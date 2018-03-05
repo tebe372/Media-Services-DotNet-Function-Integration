@@ -84,6 +84,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string preferredSE = data.preferredSE;
     string documentId = "";
     string publishedDocumentId = "";
+    sstring videoName = "";
 
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
@@ -113,12 +114,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             });
         }
 
-        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Videos", "Assets"), new
-        {
-            playerUrl = playerUrl,
-            smoothUrl = smoothUrl,
-            pathUrl = pathUrl
-        });
+        videoName = outputAsset.Name;
+        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Media", "Assets"), outputAsset);
         documentId = result.Resource.Id;
 
         // publish with a streaming locator (100 years)
@@ -153,8 +150,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
     try
     {      
-        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Videos", "PublishedAssets"), new
+        var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Media", "PublishedAssets"), new
         {
+            videoName = videoName,
             playerUrl = playerUrl,
             smoothUrl = smoothUrl,
             pathUrl = pathUrl
@@ -173,6 +171,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     log.Info($"");
     return req.CreateResponse(HttpStatusCode.OK, new
     {
+        videoName = videoName,
         playerUrl = playerUrl,
         smoothUrl = smoothUrl,
         pathUrl = pathUrl,
