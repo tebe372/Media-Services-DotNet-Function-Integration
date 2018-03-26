@@ -78,6 +78,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         });
     }
 
+    string thumbnailUrl = "";
     string playerUrl = "";
     string smoothUrl = "";
     string pathUrl = "";
@@ -113,6 +114,15 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 error = "Asset not found"
             });
         }
+
+        //Get Thumbnail URL
+        var readPolicy =
+            _context.AccessPolicies.Create("readPolicy", TimeSpan.FromHours(4), AccessPermissions.Read);
+        var outputLocator = _context.Locators.CreateLocator(LocatorType.Sas, outputAsset, readPolicy);
+        var thumbnailFile = outputAsset.AssetFiles.AsEnumerable().Where(f => f.Name.EndsWith(".png")).OrderByDescending(f => f.IsPrimary).FirstOrDefault();
+
+        thumbnailUrl = string.Format("{0}/{1}{2}", outputAsset.Uri.ToString(), thumbnailFile.Name, outputLocator.ContentAccessComponent);
+
 
         videoName = outputAsset.Name;
         var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Media", "Assets"), outputAsset);
@@ -152,6 +162,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     {      
         var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Media", "PublishedAssets"), new
         {
+            thumbnailUrl = thumbnailUrl,
             videoName = videoName,
             playerUrl = playerUrl,
             smoothUrl = smoothUrl,
@@ -171,6 +182,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     log.Info($"");
     return req.CreateResponse(HttpStatusCode.OK, new
     {
+        thumbnailUrl = thumbnailUrl,
         videoName = videoName,
         playerUrl = playerUrl,
         smoothUrl = smoothUrl,
