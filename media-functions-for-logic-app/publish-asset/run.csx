@@ -121,8 +121,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         var outputLocator = _context.Locators.CreateLocator(LocatorType.Sas, outputAsset, readPolicy);
         var thumbnailFile = outputAsset.AssetFiles.AsEnumerable().Where(f => f.Name.EndsWith(".png")).OrderByDescending(f => f.IsPrimary).FirstOrDefault();
 
-        thumbnailUrl = string.Format("{0}/{1}{2}", outputAsset.Uri.ToString(), thumbnailFile.Name, outputLocator.ContentAccessComponent);
-
+        if(thumbnailFile != null && !string.IsNullOrEmpty(thumbnailFile.Name))
+        { 
+            thumbnailUrl = string.Format("{0}/{1}{2}", outputAsset.Uri.ToString(), thumbnailFile.Name, outputLocator.ContentAccessComponent);
+        }
 
         videoName = outputAsset.Name;
         var result = await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri("Media", "Assets"), outputAsset);
